@@ -2,19 +2,25 @@
 
 services:
   api:
+    container_name: api-container
     image: imageservice
     build:
       context: .
       dockerfile: ImageService/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=root;Server=postgres;Port=5432;Database=ImageService; IntegratedSecurity=true;Pooling=true;
+      - ConnectionStrings__Database=User ID=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-root};Server=postgres;Port=5432;Database=ImageService; IntegratedSecurity=true;Pooling=true;
+      - ConnectionStrings__MINIO_ENDPOINT=minio
+      - ConnectionStrings__MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-MinioSecretKey123$}
+      - ConnectionStrings__MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-MinioSecretKey123$}
       - ASPNETCORE_URLS=http://+:80
     ports:
       - "8000:80"
     networks:
       - backend
+    restart: always
     depends_on:
       - postgres
+      - minio
   
   postgres:
     container_name: postgres_db_container
@@ -25,11 +31,11 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/var/lib/postgresql/data
-    restart: always
     ports:
       - "5432:5432"
     networks:
       - backend
+    restart: always
   
   pgadmin:
     container_name: pgadmin_db_container
@@ -46,6 +52,23 @@ services:
     networks:
       - backend
     restart: unless-stopped
+  
+  minio:
+    container_name: minio-container
+    image: minio/minio:RELEASE.2022-01-08T03-11-54Z.hotfix.f533071b4
+    command: server /data --console-address ":9090"
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-MinioSecretKey123$}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-MinioSecretKey123$}
+    volumes:
+      - minio:/data
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    networks:
+      - backend
+    restart: always
+    
 
 networks:
   backend:
@@ -54,3 +77,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  minio:

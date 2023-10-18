@@ -13,8 +13,15 @@ public class AppDbContext : IdentityDbContext<User>
         _configuration = configuration;
     }
 
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.ApplyConfiguration(new UserEntityTypeConfiguration());
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+        options.UseNpgsql(_configuration.GetConnectionString("Database"));
     }
 }

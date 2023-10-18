@@ -4,6 +4,7 @@ namespace ImageService.Services;
 
 public interface IUserService
 {
-    Task<ITaskResult<AuthenticateResponse>> Authenticate(AuthenticateRequest model);
-    Task<ITaskResult<RegisterResponse>> Register(RegisterRequest model);
+    Task<TaskResult<AuthenticateResponse>> Authenticate(AuthenticateRequest model);
+    Task<TaskResult<RegisterResponse>> Register(RegisterRequest model);
+    Task<TaskResult<ImageUploadResult>> UploadImage(ImageUploadRequest imageStream, string userId);
 }

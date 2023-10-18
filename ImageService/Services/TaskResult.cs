@@ -1,6 +1,6 @@
 ﻿namespace ImageService.Services;
 
-public class ITaskResult<T>
+public class TaskResult<T>
 {
     public T? Result { get; init; }
     public required bool Succeeded { get; init; }
