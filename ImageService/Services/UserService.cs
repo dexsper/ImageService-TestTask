@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using ImageService.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ImageService.Services;
