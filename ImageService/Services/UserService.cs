@@ -10,7 +10,6 @@ namespace ImageService.Services;
 
 public class UserService : IUserService
 {
-    private readonly AppDbContext _dbContext;
     private readonly IImageService _imageService;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
@@ -23,7 +22,6 @@ public class UserService : IUserService
         SignInManager<User> signInManager,
         ILoggerFactory loggerFactory)
     {
-        _dbContext = dbContext;
         _imageService = imageService;
         _userManager = userManager;
         _signInManager = signInManager;
@@ -105,7 +103,7 @@ public class UserService : IUserService
 
     public async Task<TaskResult<ImageUploadResult>> UploadImage(ImageUploadRequest model, string userId)
     {
-        var user = await _dbContext.Users.Include(u => u.Images).FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _userManager.Users.Include(u => u.Images).FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)
         {
@@ -121,7 +119,7 @@ public class UserService : IUserService
         if (result is { Succeeded: true, Result: not null })
         {
             user.AddImage(result.Result);
-            await _dbContext.SaveChangesAsync();
+            await _userManager.UpdateAsync(user);
 
             return new()
             {
