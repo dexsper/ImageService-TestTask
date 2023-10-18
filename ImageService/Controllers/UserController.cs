@@ -108,7 +108,7 @@ public class UserController : ControllerBase
     [HttpGet("friend/get_images")]
     [Authorize]
     [ProducesResponseType(typeof(GetImagesResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetFriendImage([FromBody] GetImagesRequest model)
+    public async Task<IActionResult> GetFriendImage([FromQuery] GetImagesRequest model)
     {
         var identifierClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 

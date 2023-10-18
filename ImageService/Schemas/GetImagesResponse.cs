@@ -1,4 +1,4 @@
-﻿namespace ImageService.Schemas;
+﻿namespace ImageService.Models;
 
 public class GetImagesResponse
 {

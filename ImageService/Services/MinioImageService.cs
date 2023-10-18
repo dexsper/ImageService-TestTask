@@ -8,11 +8,14 @@ namespace ImageService.Services;
 public class MinioImageService : IImageService
 {
     private const string BucketName = "photos";
+
+    private readonly ILogger _logger;
     private readonly IMinioClient _minioClient;
 
-    public MinioImageService(IMinioClient minioClient)
+    public MinioImageService(IMinioClient minioClient, ILoggerFactory loggerFactory)
     {
         _minioClient = minioClient;
+        _logger = loggerFactory.CreateLogger<MinioImageService>();
     }
 
     public async Task<TaskResult<Image>> PutImage(User user, ImageUploadRequest model)
@@ -49,6 +52,7 @@ public class MinioImageService : IImageService
         }
         catch (MinioException e)
         {
+            _logger.LogError($"Failed put image to storage: {e.Message}");
             return new()
             {
                 Succeeded = false,
@@ -69,7 +73,7 @@ public class MinioImageService : IImageService
                     .WithBucket(BucketName)
                     .WithObject(userImage.Name)
                     .WithExpiry(60 * 60 * 24));
-                
+
                 if (!string.IsNullOrEmpty(image))
                     images.Add(image);
             }
@@ -82,6 +86,8 @@ public class MinioImageService : IImageService
         }
         catch (MinioException e)
         {
+            _logger.LogError($"Failed to fetch image from storage: {e.Message}");
+            
             return new()
             {
                 Succeeded = false,

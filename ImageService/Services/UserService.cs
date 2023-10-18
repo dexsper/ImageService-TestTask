@@ -155,6 +155,15 @@ public class UserService : IUserService
             };
         }
 
+        if (user.Id == friendUser.Id)
+        {
+            return new()
+            {
+                Succeeded = false,
+                Error = "You can't add yourself."
+            };
+        }
+
         if (user.Friends.Any(f => f.UserName == friendUser.UserName))
         {
             return new()
@@ -213,7 +222,7 @@ public class UserService : IUserService
         }
 
         var getResult = await _imageService.GetImages(targetUser);
-        
+
         if (getResult.Succeeded)
         {
             return new()
