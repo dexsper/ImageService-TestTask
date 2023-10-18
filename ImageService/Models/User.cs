@@ -13,7 +13,7 @@ public class User : IdentityUser
     public void AddImage(Image image)
     {
         if (image == null)
-            throw new NullReferenceException($"Image can't be null!");
+            throw new ArgumentNullException(nameof(image));
 
         if (!_images.Contains(image))
             _images.Add(image);
@@ -22,7 +22,7 @@ public class User : IdentityUser
     public void AddFriend(User friend)
     {
         if (friend == null)
-            throw new NullReferenceException($"Friend can't be null!");
+            throw new ArgumentNullException(nameof(friend));
 
         if (!_friends.Contains(friend))
             _friends.Add(friend);
