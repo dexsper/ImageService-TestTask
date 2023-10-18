@@ -1,5 +1,4 @@
 ﻿using ImageService.Models;
-using ImageService.Schemas;
 
 namespace ImageService.Services;
 

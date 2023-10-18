@@ -3,9 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ImageService.Schemas;
 
-public class TokenAuthOption
+public abstract class TokenAuthOption
 {
-    private const string KEY = "DBA84214DEF50A5BBDB61B5DF580439E622531CA1E8832747DFC4726376D96E7";
+    private const string Key = "DBA84214DEF50A5BBDB61B5DF580439E622531CA1E8832747DFC4726376D96E7";
     
     public static string Audience => "ImageService";
     public static string Issuer => "ImageServiceClient";
@@ -13,5 +13,5 @@ public class TokenAuthOption
     public static string TokenType => "Bearer";
     
 
-    public static SymmetricSecurityKey GetSymmetricSecurityKey() => new(Encoding.UTF8.GetBytes(KEY));
+    public static SymmetricSecurityKey GetSymmetricSecurityKey() => new(Encoding.UTF8.GetBytes(Key));
 }

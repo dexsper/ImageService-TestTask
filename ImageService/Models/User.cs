@@ -4,9 +4,9 @@ namespace ImageService.Models;
 
 public class User : IdentityUser
 {
-    private readonly List<User> _friends;
-    private readonly List<Image> _images;
-    
+    private readonly List<User> _friends = new();
+    private readonly List<Image> _images = new();
+
     public virtual IReadOnlyCollection<Image> Images => _images;
     public virtual IReadOnlyCollection<User> Friends => _friends;
 

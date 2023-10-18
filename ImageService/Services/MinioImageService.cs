@@ -1,5 +1,4 @@
 ﻿using ImageService.Models;
-using ImageService.Schemas;
 using Minio;
 using Minio.Exceptions;
 
@@ -28,8 +27,7 @@ public class MinioImageService : IImageService
             imageStream.Position = 0;
 
             string fileExt = Path.GetExtension(model.Image.FileName);
-            int imagesId = user.Images?.Count ?? 0;
-            string objectName = $"{user.Id}/{imagesId}{fileExt}";
+            string objectName = $"{user.Id}/{user.Images.Count}{fileExt}";
 
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(BucketName)

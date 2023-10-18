@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using ImageService.Models;
-using ImageService.Schemas;
+﻿using ImageService.Models;
 using ImageService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +37,7 @@ public class ImageController : AuthenticatedController
     [ProducesResponseType(typeof(GetImagesResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetImages()
     {
-        var result = await _userService.GetImages(new() { Username = Username }, UserId);
+        var result = await _userService.GetImages(new GetImagesRequest(Username), UserId);
 
         if (result.Succeeded)
         {

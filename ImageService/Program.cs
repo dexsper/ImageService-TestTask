@@ -5,7 +5,6 @@ using ImageService.Schemas;
 using ImageService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Minio;
@@ -42,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddDbContext<AppDbContext>();
-builder.Services.AddScoped<IMinioClient, MinioClient>(s =>
+builder.Services.AddScoped<IMinioClient, MinioClient>(_ =>
 {
     var accessKey = builder.Configuration.GetConnectionString("MINIO_ACCESS_KEY");
     var secretKey = builder.Configuration.GetConnectionString("MINIO_SECRET_KEY");

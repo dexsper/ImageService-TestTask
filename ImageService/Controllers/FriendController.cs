@@ -1,5 +1,4 @@
 ﻿using ImageService.Models;
-using ImageService.Schemas;
 using ImageService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using ImageService.Data;
 using ImageService.Models;
 using ImageService.Schemas;
 using Microsoft.AspNetCore.Identity;
@@ -17,7 +16,6 @@ public class UserService : IUserService
     private readonly ILogger _logger;
 
     public UserService(
-        AppDbContext dbContext,
         IImageService imageService,
         UserManager<User> userManager,
         SignInManager<User> signInManager,
@@ -67,11 +65,7 @@ public class UserService : IUserService
         return new()
         {
             Succeeded = true,
-            Result = new()
-            {
-                AccessToken = GenerateToken(expiresIn, user),
-                TokenType = TokenAuthOption.TokenType
-            },
+            Result = new(GenerateToken(expiresIn, user), TokenAuthOption.TokenType)
         };
     }
 
@@ -87,7 +81,7 @@ public class UserService : IUserService
             return new TaskResult<RegisterResponse>
             {
                 Succeeded = true,
-                Result = new()
+                Result = new(user.Id)
             };
         }
 
@@ -125,10 +119,7 @@ public class UserService : IUserService
             return new()
             {
                 Succeeded = true,
-                Result = new()
-                {
-                    Name = result.Result.Name
-                }
+                Result = new(result.Result.Name)
             };
         }
 
@@ -176,14 +167,17 @@ public class UserService : IUserService
         user.AddFriend(friendUser);
         await _userManager.UpdateAsync(user);
 
+        List<string> friendList = user.Friends
+            .Where(x => !string.IsNullOrEmpty(x.UserName))
+            .Select(x => x.UserName!)
+            .ToList();
+        
         _logger.LogInformation($"User {user.UserName} add friend: {friendUser.UserName}");
 
         return new()
         {
             Succeeded = true,
-            Result = new()
-            {
-            }
+            Result = new(friendList)
         };
     }
 
@@ -223,15 +217,12 @@ public class UserService : IUserService
 
         var getResult = await _imageService.GetImages(targetUser);
 
-        if (getResult.Succeeded)
+        if (getResult is { Succeeded: true, Result: not null })
         {
             return new()
             {
                 Succeeded = true,
-                Result = new()
-                {
-                    Images = getResult.Result
-                }
+                Result = new(getResult.Result)
             };
         }
 
