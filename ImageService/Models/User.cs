@@ -1,12 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace ImageService.Models;
 
-public class User
+public class User : IdentityUser
 {
-    public int Id { get; set; }
-    public string Username { get; set; } = null!;
-    
-    [JsonIgnore]
-    public string PasswordHash { get; set; } = null!;
 }

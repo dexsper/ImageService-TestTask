@@ -1,9 +1,10 @@
 ﻿using ImageService.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ImageService.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User>
 {
     private readonly IConfiguration _configuration;
 
@@ -16,6 +17,4 @@ public class AppDbContext : DbContext
     {
         options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
     }
-
-    public DbSet<User> Users { get; set; }
 }

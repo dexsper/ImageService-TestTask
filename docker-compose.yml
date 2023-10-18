@@ -6,8 +6,11 @@ services:
     build:
       context: .
       dockerfile: ImageService/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=root;Server=postgres;Port=5432;Database=ImageService; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=http://+:80
     ports:
-      - "80:80"
+      - "8000:80"
     networks:
       - backend
     depends_on:
@@ -21,12 +24,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
       PGDATA: /data/postgres
     volumes:
-      - postgres:/data/postgres
+      - postgres:/var/lib/postgresql/data
+    restart: always
     ports:
       - "5432:5432"
     networks:
       - backend
-    restart: unless-stopped
   
   pgadmin:
     container_name: pgadmin_db_container
