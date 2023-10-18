@@ -1,6 +1,7 @@
 using ImageService.Data;
 using ImageService.Extensions;
 using ImageService.Models;
+using ImageService.Schemas;
 using ImageService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -99,7 +100,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     
-    db.Database.Migrate();
+    db.Database.EnsureCreated();
+    //db.Database.Migrate();
 }
 
 app.Run();

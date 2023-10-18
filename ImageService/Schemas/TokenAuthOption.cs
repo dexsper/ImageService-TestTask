@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ImageService.Models;
+namespace ImageService.Schemas;
 
 public class TokenAuthOption
 {

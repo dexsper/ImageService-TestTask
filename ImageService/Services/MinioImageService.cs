@@ -1,4 +1,5 @@
 ﻿using ImageService.Models;
+using ImageService.Schemas;
 using Minio;
 using Minio.Exceptions;
 
@@ -44,6 +45,39 @@ public class MinioImageService : IImageService
                     Name = result.ObjectName,
                     UserId = user.Id
                 }
+            };
+        }
+        catch (MinioException e)
+        {
+            return new()
+            {
+                Succeeded = false,
+                Error = e.Message
+            };
+        }
+    }
+
+    public async Task<TaskResult<List<string>>> GetImages(User user)
+    {
+        try
+        {
+            List<string> images = new List<string>();
+
+            foreach (var userImage in user.Images)
+            {
+                var image = await _minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
+                    .WithBucket(BucketName)
+                    .WithObject(userImage.Name)
+                    .WithExpiry(60 * 60 * 24));
+                
+                if (!string.IsNullOrEmpty(image))
+                    images.Add(image);
+            }
+
+            return new()
+            {
+                Succeeded = true,
+                Result = images
             };
         }
         catch (MinioException e)

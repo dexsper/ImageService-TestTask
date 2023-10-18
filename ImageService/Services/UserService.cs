@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using ImageService.Data;
 using ImageService.Models;
+using ImageService.Schemas;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -101,7 +102,7 @@ public class UserService : IUserService
         };
     }
 
-    public async Task<TaskResult<ImageUploadResult>> UploadImage(ImageUploadRequest model, string userId)
+    public async Task<TaskResult<ImageUploadResponse>> UploadImage(ImageUploadRequest model, string userId)
     {
         var user = await _userManager.Users.Include(u => u.Images).FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -139,6 +140,99 @@ public class UserService : IUserService
             Error = "Failed upload image"
         };
     }
+
+    public async Task<TaskResult<AddFriendResponse>> AddFriend(AddFriendRequest model, string userId)
+    {
+        var user = await _userManager.Users.Include(u => u.Friends).FirstOrDefaultAsync(u => u.Id == userId);
+        var friendUser = await _userManager.FindByNameAsync(model.FriendName);
+
+        if (user == null || friendUser == null)
+        {
+            return new()
+            {
+                Succeeded = false,
+                Error = "User not found."
+            };
+        }
+
+        if (user.Friends.Any(f => f.UserName == friendUser.UserName))
+        {
+            return new()
+            {
+                Succeeded = false,
+                Error = "User already in friends"
+            };
+        }
+
+        user.AddFriend(friendUser);
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation($"User {user.UserName} add friend: {friendUser.UserName}");
+
+        return new()
+        {
+            Succeeded = true,
+            Result = new()
+            {
+            }
+        };
+    }
+
+    public async Task<TaskResult<GetImagesResponse>> GetImages(GetImagesRequest model, string userId)
+    {
+        var user = await _userManager.Users.Include(u => u.Images).FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return new()
+            {
+                Succeeded = false,
+                Error = "User not found."
+            };
+        }
+
+        User targetUser = user;
+
+        if (model.Username != user.UserName)
+        {
+            var friendUser = await _userManager.Users
+                .Include(u => u.Friends)
+                .Include(u => u.Images)
+                .FirstOrDefaultAsync(u => u.UserName == model.Username);
+
+            if (friendUser == null || friendUser.Friends.All(u => u.Id != user.Id))
+            {
+                return new()
+                {
+                    Succeeded = false,
+                    Error = "Friend not found"
+                };
+            }
+
+            targetUser = friendUser;
+        }
+
+        var getResult = await _imageService.GetImages(targetUser);
+        
+        if (getResult.Succeeded)
+        {
+            return new()
+            {
+                Succeeded = true,
+                Result = new()
+                {
+                    Images = getResult.Result
+                }
+            };
+        }
+
+        return new()
+        {
+            Succeeded = false,
+            Error = "Failed to fetch images."
+        };
+    }
+
 
     private string GenerateToken(DateTime expires, User user)
     {

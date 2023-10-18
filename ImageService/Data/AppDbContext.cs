@@ -22,11 +22,19 @@ public class AppDbContext : IdentityDbContext<User>
         builder.Entity<User>().Metadata.FindNavigation(nameof(User.Images))
             ?.SetPropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.Entity<User>().Metadata.FindNavigation(nameof(User.Friends))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+
         builder.Entity<User>()
             .HasMany(e => e.Images)
             .WithOne(e => e.User)
             .HasForeignKey(e => e.UserId)
             .IsRequired();
+
+        builder.Entity<User>()
+            .HasMany(x => x.Friends)
+            .WithMany();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)

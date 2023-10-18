@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ImageService.Extensions;
 
-namespace ImageService.Models;
+namespace ImageService.Schemas;
 
 public class ImageUploadRequest
 {

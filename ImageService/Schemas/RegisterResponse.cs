@@ -1,4 +1,4 @@
-﻿namespace ImageService.Models;
+﻿namespace ImageService.Schemas;
 
 public class RegisterResponse
 {
