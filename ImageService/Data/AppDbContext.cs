@@ -8,6 +8,8 @@ public class AppDbContext : IdentityDbContext<User>
 {
     private readonly IConfiguration _configuration;
 
+    public DbSet<Image> Images { get; set; } = null!;
+
     public AppDbContext(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -17,7 +19,14 @@ public class AppDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(builder);
 
-        builder.ApplyConfiguration(new UserEntityTypeConfiguration());
+        builder.Entity<User>().Metadata.FindNavigation(nameof(User.Images))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Entity<User>()
+            .HasMany(e => e.Images)
+            .WithOne(e => e.User)
+            .HasForeignKey(e => e.UserId)
+            .IsRequired();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)

@@ -52,6 +52,7 @@ builder.Services.AddScoped<IMinioClient, MinioClient>(s =>
         .WithEndpoint(endpoint, 9000)
         .Build();
 });
+builder.Services.AddScoped<IImageService, MinioImageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddControllers();
@@ -97,6 +98,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    
     db.Database.Migrate();
 }
 

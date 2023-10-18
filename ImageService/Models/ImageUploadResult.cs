@@ -2,5 +2,5 @@
 
 public class ImageUploadResult
 {
-    public string ObjectName { get; set; }
+    public string Name { get; set; }
 }

@@ -1,31 +1,32 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ImageService.Data;
 using ImageService.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Minio;
-using Minio.Exceptions;
 
 namespace ImageService.Services;
 
 public class UserService : IUserService
 {
-    private const string BucketName = "photos";
-
+    private readonly AppDbContext _dbContext;
+    private readonly IImageService _imageService;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
-    private readonly IMinioClient _minioClient;
     private readonly ILogger _logger;
 
     public UserService(
+        AppDbContext dbContext,
+        IImageService imageService,
         UserManager<User> userManager,
         SignInManager<User> signInManager,
-        IMinioClient minioClient,
         ILoggerFactory loggerFactory)
     {
+        _dbContext = dbContext;
+        _imageService = imageService;
         _userManager = userManager;
         _signInManager = signInManager;
-        _minioClient = minioClient;
         _logger = loggerFactory.CreateLogger<UserService>();
     }
 
@@ -104,7 +105,7 @@ public class UserService : IUserService
 
     public async Task<TaskResult<ImageUploadResult>> UploadImage(ImageUploadRequest model, string userId)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await _dbContext.Users.Include(u => u.Images).FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)
         {
@@ -115,57 +116,31 @@ public class UserService : IUserService
             };
         }
 
-        try
+        var result = await _imageService.PutImage(user, model);
+
+        if (result is { Succeeded: true, Result: not null })
         {
-            var beArgs = new BucketExistsArgs().WithBucket(BucketName);
-            bool found = await _minioClient.BucketExistsAsync(beArgs);
-
-            if (!found)
-            {
-                var mbArgs = new MakeBucketArgs().WithBucket(BucketName);
-                await _minioClient.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-            }
-
-            await using var imageStream = model.Image.OpenReadStream();
-            imageStream.Position = 0;
-
-            var putObjectArgs = new PutObjectArgs()
-                .WithBucket(BucketName)
-                .WithObject(model.Image.FileName)
-                .WithStreamData(imageStream)
-                .WithObjectSize(imageStream.Length)
-                .WithContentType(model.Image.ContentType);
-
-            var result = await _minioClient.PutObjectAsync(putObjectArgs);
-
-            user.AddImage(new()
-            {
-                Name = result.ObjectName,
-                UserId = user.Id
-            });
-            await _userManager.UpdateAsync(user);
+            user.AddImage(result.Result);
+            await _dbContext.SaveChangesAsync();
 
             return new()
             {
                 Succeeded = true,
                 Result = new()
                 {
-                    ObjectName = result.ObjectName
+                    Name = result.Result.Name
                 }
             };
         }
-        catch (MinioException exception)
+
+        _logger.LogError($"Failed upload image: {result.Error}");
+
+        return new()
         {
-            _logger.LogError($"Failed upload image: {exception.Message}");
-
-            return new()
-            {
-                Succeeded = false,
-                Error = "Failed upload image"
-            };
-        }
+            Succeeded = false,
+            Error = "Failed upload image"
+        };
     }
-
 
     private string GenerateToken(DateTime expires, User user)
     {
