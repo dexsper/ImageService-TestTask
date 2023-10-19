@@ -4,6 +4,14 @@ namespace ImageService.Services;
 
 public interface IImageService
 {
-    Task<TaskResult<Image>> PutImage(User user, ImageUploadRequest model);
-    Task<TaskResult<List<string>>> GetImages(User user);
+    Task<string> PutImage(User user, ImageUploadRequest model);
+    Task<List<string>> GetImages(User user);
+}
+
+public class StorageException : Exception
+{
+    public StorageException(string? message) : base(message)
+    {
+        
+    }
 }

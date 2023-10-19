@@ -7,17 +7,14 @@ namespace ImageService.Services;
 public class MinioImageService : IImageService
 {
     private const string BucketName = "photos";
-
-    private readonly ILogger _logger;
     private readonly IMinioClient _minioClient;
 
-    public MinioImageService(IMinioClient minioClient, ILoggerFactory loggerFactory)
+    public MinioImageService(IMinioClient minioClient)
     {
         _minioClient = minioClient;
-        _logger = loggerFactory.CreateLogger<MinioImageService>();
     }
 
-    public async Task<TaskResult<Image>> PutImage(User user, ImageUploadRequest model)
+    public async Task<string> PutImage(User user, ImageUploadRequest model)
     {
         try
         {
@@ -38,28 +35,15 @@ public class MinioImageService : IImageService
 
             var result = await _minioClient.PutObjectAsync(putObjectArgs);
 
-            return new()
-            {
-                Succeeded = true,
-                Result = new()
-                {
-                    Name = result.ObjectName,
-                    UserId = user.Id
-                }
-            };
+            return new string(result.ObjectName);
         }
         catch (MinioException e)
         {
-            _logger.LogError($"Failed put image to storage: {e.Message}");
-            return new()
-            {
-                Succeeded = false,
-                Error = e.Message
-            };
+            throw new StorageException(e.Message);
         }
     }
 
-    public async Task<TaskResult<List<string>>> GetImages(User user)
+    public async Task<List<string>> GetImages(User user)
     {
         try
         {
@@ -76,21 +60,11 @@ public class MinioImageService : IImageService
                     images.Add(image);
             }
 
-            return new()
-            {
-                Succeeded = true,
-                Result = images
-            };
+            return new List<string>(images);
         }
         catch (MinioException e)
         {
-            _logger.LogError($"Failed to fetch image from storage: {e.Message}");
-            
-            return new()
-            {
-                Succeeded = false,
-                Error = e.Message
-            };
+            throw new Exception(e.Message);
         }
     }
 
@@ -99,10 +73,17 @@ public class MinioImageService : IImageService
         var beArgs = new BucketExistsArgs().WithBucket(BucketName);
         bool found = await _minioClient.BucketExistsAsync(beArgs);
 
-        if (!found)
+        if (found)
+            return;
+
+        try
         {
             var mbArgs = new MakeBucketArgs().WithBucket(BucketName);
             await _minioClient.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+        }
+        catch (MinioException e)
+        {
+            throw new StorageException(e.Message);
         }
     }
 }

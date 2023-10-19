@@ -1,5 +1,7 @@
 ﻿namespace ImageService.Models;
 
+public record ErrorResult(string Name, string Message);
+
 public record AddFriendResponse(List<string> FriendList);
 
 public record AuthenticateResponse(string AccessToken, string TokenType);

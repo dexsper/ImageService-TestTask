@@ -1,6 +1,5 @@
 ﻿using ImageService.Models;
 using ImageService.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImageService.Controllers;
@@ -17,33 +16,23 @@ public class ImageController : AuthenticatedController
     }
 
     [HttpPost("upload")]
-    [Authorize]
     [ProducesResponseType(typeof(ImageUploadResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResult), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadImage([FromForm] ImageUploadRequest model)
     {
         var result = await _userService.UploadImage(model, UserId);
 
-        if (result.Succeeded)
-        {
-            return Ok(result.Result);
-        }
-
-        return BadRequest(result.Error);
+        return Ok(result);
     }
 
 
     [HttpGet("get")]
-    [Authorize]
     [ProducesResponseType(typeof(GetImagesResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResult), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetImages()
     {
         var result = await _userService.GetImages(new GetImagesRequest(Username), UserId);
 
-        if (result.Succeeded)
-        {
-            return Ok(result.Result);
-        }
-
-        return BadRequest(result.Error);
+        return Ok(result);
     }
 }

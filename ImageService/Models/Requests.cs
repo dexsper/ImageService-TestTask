@@ -7,7 +7,7 @@ public record AddFriendRequest(string FriendName);
 
 public record AuthenticateRequest([MinLength(6)] string Username, [MinLength(6)] string Password);
 
-public record GetImagesRequest(string Username);
+public record GetImagesRequest(string? Username);
 
 public record RegisterRequest([MinLength(6)] string Username, [MinLength(6)] string Password);
 
